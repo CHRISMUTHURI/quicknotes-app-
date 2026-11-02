@@ -1,45 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QuickNotes App</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickNotes - User Directory</title>
+    <link rel="stylesheet" href="../style.css">
+    <script src="users.js" defer></script>
 </head>
 <body>
-  <header>
-    <h1>QuickNotes App</h1>
-  </header>
 
-  <main>
-    <section>
-      <h2>Add a New Note</h2>
-      <form id="note-form">
-        <label for="note-input">Note Content:</label>
-        <input type="text" id="note-input" placeholder="Enter your note (max 200 chars)...">
-        
-        <select id="note-category">
-          <option value="Personal">Personal</option>
-          <option value="Work">Work</option>
-          <option value="Ideas">Ideas</option>
-        </select>
-        
-        <button type="submit">Add Note</button>
-      </form>
-      <p id="error-message"></p>
-    </section>
+    <header>
+        <h1>User Directory</h1>
+        <nav>
+            <ul>
+                <li><a href="../index.html">Workspace</a></li>
+                <li><a href="../about.html">About</a></li>
+                <li><a href="index.html">Users</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <section>
-      <h2>Your Notes</h2>
-      <input type="text" id="search-input" placeholder="Search notes...">
-      <p id="note-count">You have 0 notes.</p>
-      <ul id="notes-list"></ul>
-    </section>
-  </main>
+    <main>
+        <section id="users-section">
+            <h2>Community Users</h2>
+            
+            <div class="controls-and-counts">
+                <button id="load-users" type="button">Load Users</button>
+                
+                <div class="filter-container">
+                    <label for="filter-input">Filter by Name:</label>
+                    <input type="text" id="filter-input" placeholder="Type a name...">
+                </div>
+            </div>
 
-  <footer>
-    <p>&copy; 2026 QuickNotes App. Built for PLP Assignment.</p>
-  </footer>
+            <p id="status" aria-live="polite"></p>
+
+            <ul id="users-list"></ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 QuickNotes. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>

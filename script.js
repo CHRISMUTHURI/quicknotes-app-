@@ -1,116 +1,89 @@
-// DOM Element Selections using querySelector
-const noteForm = document.querySelector('#note-form');
-const noteInput = document.querySelector('#note-input');
-const noteCategory = document.querySelector('#note-category');
-const searchInput = document.querySelector('#search-input');
-const notesList = document.querySelector('#notes-list');
-const noteCount = document.querySelector('#note-count');
-const errorMessage = document.querySelector('#error-message');
+// State management
+let usersData = [];
 
-// LocalStorage key
-const STORAGE_KEY = 'quicknotes_data';
+// DOM Elements
+const loadUsersBtn = document.getElementById("load-users");
+const filterInput = document.getElementById("filter-input");
+const statusParam = document.getElementById("status");
+const usersList = document.getElementById("users-list");
 
-// Load saved notes from LocalStorage or initialize empty array
-let notes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+/**
+ * Render array of user objects into the DOM using createElement & textContent
+ * @param {Array} list - Array of user objects
+ */
+function renderUsers(list) {
+    // Clear existing list content
+    usersList.innerHTML = "";
 
-// Save notes to LocalStorage
-function saveNotes() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    if (list.length === 0) {
+        statusParam.textContent = "No users match your filter.";
+        return;
+    }
+
+    statusParam.textContent = `Displaying ${list.length} user(s).`;
+
+    list.forEach(user => {
+        const li = document.createElement("li");
+        li.className = "user-card";
+
+        const nameHeading = document.createElement("h3");
+        nameHeading.textContent = user.name;
+
+        const emailP = document.createElement("p");
+        emailP.textContent = `Email: ${user.email}`;
+
+        const cityP = document.createElement("p");
+        cityP.textContent = `City: ${user.address?.city || "N/A"}`;
+
+        const companyP = document.createElement("p");
+        companyP.textContent = `Company: ${user.company?.name || "N/A"}`;
+
+        li.appendChild(nameHeading);
+        li.appendChild(emailP);
+        li.appendChild(cityP);
+        li.appendChild(companyP);
+
+        usersList.appendChild(li);
+    });
 }
 
-// Update Note Count Display
-function updateNoteCount(count) {
-  if (count === 0) {
-    noteCount.textContent = 'You have 0 notes.';
-  } else if (count === 1) {
-    noteCount.textContent = 'You have 1 note.';
-  } else {
-    noteCount.textContent = `You have ${count} notes.`;
-  }
+/**
+ * Fetch users from API with handling for loading, success, and error states
+ */
+async function loadUsers() {
+    statusParam.textContent = "Loading users...";
+    loadUsersBtn.disabled = true;
+    usersList.innerHTML = "";
+
+    try {
+        const response = await fetch("https://jsonplaceholder.typicode.com/users");
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error status: ${response.status}`);
+        }
+
+        usersData = await response.json();
+        statusParam.textContent = "Users loaded successfully!";
+        renderUsers(usersData);
+    } catch (error) {
+        statusParam.textContent = `Failed to load users: ${error.message}`;
+        console.error("Error fetching users:", error);
+    } finally {
+        loadUsersBtn.disabled = false;
+    }
 }
 
-// Render Notes to DOM
-function render(filterTerm = '') {
-  notesList.textContent = '';
-  
-  const filteredNotes = notes.filter(note => 
-    note.text.toLowerCase().includes(filterTerm.toLowerCase())
-  );
-
-  filteredNotes.forEach(note => {
-    const li = document.createElement('li');
-    li.className = `note-card cat-${note.category}`;
-
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'note-content';
-
-    const textPara = document.createElement('p');
-    textPara.textContent = note.text; // Safe text insertion using textContent
-
-    const metaPara = document.createElement('p');
-    metaPara.className = 'note-meta';
-    metaPara.textContent = `Category: ${note.category} | Created: ${note.createdAt}`;
-
-    contentDiv.appendChild(textPara);
-    contentDiv.appendChild(metaPara);
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Delete';
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.addEventListener('click', () => deleteNote(note.id));
-
-    li.appendChild(contentDiv);
-    li.appendChild(deleteBtn);
-
-    notesList.appendChild(li);
-  });
-
-  updateNoteCount(filteredNotes.length);
-}
-
-// Add New Note
-function addNote(event) {
-  event.preventDefault();
-  const text = noteInput.value.trim();
-  const category = noteCategory.value;
-
-  // Validation
-  if (text === '') {
-    errorMessage.textContent = 'Note content cannot be empty.';
-    return;
-  }
-
-  if (text.length > 200) {
-    errorMessage.textContent = 'Note content cannot exceed 200 characters.';
-    return;
-  }
-
-  errorMessage.textContent = ''; // Clear error if validation passes
-
-  const newNote = {
-    id: Date.now(),
-    text: text,
-    category: category,
-    createdAt: new Date().toLocaleDateString()
-  };
-
-  notes.push(newNote);
-  saveNotes();
-  render(searchInput.value);
-
-  noteInput.value = ''; // Reset input field
-}
-
-// Delete Note
-function deleteNote(id) {
-  notes = notes.filter(note => note.id !== id);
-  saveNotes();
-  render(searchInput.value);
+/**
+ * Filter loaded users by name without refetching
+ */
+function filterUsers() {
+    const searchTerm = filterInput.value.toLowerCase().trim();
+    const filteredUsers = usersData.filter(user => 
+        user.name.toLowerCase().includes(searchTerm)
+    );
+    renderUsers(filteredUsers);
 }
 
 // Event Listeners
-noteForm.addEventListener('submit', addNote);
-searchInput.addEventListener('input', (e) => render(e.target.value));
-
-// Initial Render on Page Load
-render();
+loadUsersBtn.addEventListener("click", loadUsers);
+filterInput.addEventListener("input", filterUsers);
